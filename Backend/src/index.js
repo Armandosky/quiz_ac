@@ -1,7 +1,5 @@
 const app = require('./app')
 const port = app.get('port');
-require('./connection');
-
 
 require('./connection');
 
