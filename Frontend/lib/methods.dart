@@ -114,7 +114,6 @@ class Metodos {
           token = tokenv;
         } else {
           print("Ha ingresado 2 veces");
-
           Get.to(() => const HomeScreen(
                 isAuthorized: true,
               ));

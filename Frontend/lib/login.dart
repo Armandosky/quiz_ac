@@ -88,6 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.only(top: 5, left: 100, right: 100),
                 child: ElevatedButton(
                   onPressed: () async {
+                    await metodos.submitForm();
                     await metodos.authenticate();
                     if (metodos.authorized == 'Authorized') {
                       Get.to(() => const HomeScreen(isAuthorized: true));
@@ -106,6 +107,18 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 35.0),
+            if (metodos.errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  metodos.errorMessage!,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
