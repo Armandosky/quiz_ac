@@ -88,11 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.only(top: 5, left: 100, right: 100),
                 child: ElevatedButton(
                   onPressed: () async {
-                    await metodos.submitForm();
-                    await metodos.authenticate();
-                    if (metodos.authorized == 'Authorized') {
-                      Get.to(() => const HomeScreen(isAuthorized: true));
-                    }
+                    await metodos.submitFormB();
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(200, 60),

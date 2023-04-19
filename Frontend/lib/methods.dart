@@ -29,7 +29,6 @@ class Metodos {
   bool isAuthenticating = false;
   bool enableFingerprint = false;
   final storage = const FlutterSecureStorage();
-  late String _correo;
   final formKey = GlobalKey<FormState>();
 
   Future<void> authenticate() async {
@@ -78,7 +77,7 @@ class Metodos {
   }
 
   Future<void> submitForm() async {
-    print("utilizando");
+    print("Utilizando login");
     isLoading = true;
     errorMessage = null;
 
@@ -125,6 +124,67 @@ class Metodos {
         Get.to(() => const HomeScreen(
               isAuthorized: true,
             ));
+        correo = email;
+      }
+    } catch (error) {
+      errorMessage = 'Error al intentar iniciar sesión';
+      isLoading = false;
+    }
+  }
+
+  Future<void> submitFormB() async {
+    print("Utilizando Datos Biométricos");
+    isLoading = true;
+    errorMessage = null;
+    await authenticate();
+
+    final email = emailController.text;
+    final password = passwordController.text;
+    final url = Uri.parse('http://192.168.1.4:3000/login');
+    try {
+      final response = await http.post(url,
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(
+            {
+              'email': email,
+              'password': password,
+            },
+          ));
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 404) {
+        errorMessage = responseData['message'];
+        isLoading = false;
+      } else if (response.statusCode == 200) {
+        final tokenv = responseData['token'];
+
+        nIngresos++;
+        if (nIngresos == 1) {
+          print("Ha ingresado 1 vez");
+          if (authorized == 'Authorized') {
+            Get.to(() => const HomeScreen(
+                  isAuthorized: true,
+                ));
+          } else {
+            errorMessage = 'Error de autenticación';
+          }
+          token = tokenv;
+        } else {
+          print("Ha ingresado 2 veces");
+          if (authorized == 'Authorized') {
+            Get.to(() => const HomeScreen(
+                  isAuthorized: true,
+                ));
+          } else {
+            errorMessage = 'Error de autenticación';
+          }
+          token2 = token;
+        }
+        isLoading = false;
+
+        print('Su token es: $token');
         correo = email;
       }
     } catch (error) {
@@ -217,9 +277,9 @@ class Metodos {
       Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
       print(decodedToken);
 
-      _correo = decodedToken["email"] as String;
+      correo = decodedToken["email"] as String;
 
-      final url2 = Uri.parse('http://192.168.1.4:3000/users/$_correo/token');
+      final url2 = Uri.parse('http://192.168.1.4:3000/users/$correo/token');
       final response2 = await http.get(url2);
       if (response2.statusCode == 200) {
         final almacenamiento = await storage.read(key: 'token2');
@@ -236,5 +296,17 @@ class Metodos {
     } else {
       Get.to(() => const LoginPage(isLogged: false));
     }
+  }
+}
+
+Future<void> deleteUserToken(String email) async {
+  final url = Uri.parse('http://192.168.1.4:3000/users/$email/token');
+  final response = await http.delete(url);
+  if (response.statusCode == 200) {
+    final jsonResponse = json.decode(response.body);
+    print('Token eliminado: $jsonResponse');
+    Get.to(() => const HomeScreen(isAuthorized: false));
+  } else {
+    print('Fallo, estado: ${response.statusCode}.');
   }
 }

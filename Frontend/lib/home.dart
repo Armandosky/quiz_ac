@@ -13,6 +13,28 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   final Metodos metodos = Metodos();
+  bool _isAuthorized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isAuthorized = widget.isAuthorized;
+  }
+
+  Future<void> _toggleAuth() async {
+    await metodos.authenticate();
+    if (metodos.authorized == 'Authorized') {
+      setState(() {
+        _isAuthorized = !_isAuthorized;
+      });
+      if (!_isAuthorized) {
+        Get.to(() => const HomeScreen(isAuthorized: false));
+      } else {
+        await metodos.modalLogin(context);
+        Get.to(() => const LoginPage(isLogged: true));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,30 +51,17 @@ class HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
             const SizedBox(height: 30),
             Text(
-                widget.isAuthorized
+                _isAuthorized
                     ? '¿Quieres deshabilitar el login con datos biométricos?'
                     : '¿Quieres habilitar el login con datos biométricos?',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () async {
-                if (widget.isAuthorized) {
-                  await metodos.authenticate();
-                  if (metodos.authorized == 'Authorized') {
-                    Get.to(() => const HomeScreen(isAuthorized: false));
-                  }
-                } else {
-                  await metodos.authenticate();
-                  if (metodos.authorized == 'Authorized') {
-                    await metodos.modalLogin(context);
-                    Get.to(() => const LoginPage(isLogged: true));
-                  }
-                }
-              },
+              onPressed: _toggleAuth,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               child: Text(
-                widget.isAuthorized ? 'Deshabilitar' : 'Habilitar',
+                _isAuthorized ? 'Deshabilitar' : 'Habilitar',
               ),
             ),
           ],
