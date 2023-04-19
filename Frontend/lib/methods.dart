@@ -20,6 +20,7 @@ class Metodos {
   bool isAuthenticated = false;
   bool isConfirmado = false;
   String? errorMessage;
+  final _formKey = GlobalKey<FormState>();
   int nIngresos = 0;
   late String token;
   late String token2;
@@ -99,33 +100,41 @@ class Metodos {
 
       if (response.statusCode == 404) {
         errorMessage = responseData['message'];
-        isLoading = false; // Mover setState() a otro lugar
+        isLoading = false;
       } else if (response.statusCode == 200) {
         final tokenv = responseData['token'];
 
         nIngresos++;
         if (nIngresos == 1) {
           print("Ha ingresado 1 vez");
+
+          Get.to(() => const HomeScreen(
+                isAuthorized: false,
+              ));
           token = tokenv;
         } else {
           print("Ha ingresado 2 veces");
+
+          Get.to(() => const HomeScreen(
+                isAuthorized: true,
+              ));
           token2 = token;
         }
-        isLoading = false; // Mover setState() a otro lugar
+        isLoading = false;
 
         print('Su token es: $token');
         Get.to(() => const HomeScreen(
-              isLogged: true,
+              isAuthorized: true,
             ));
         correo = email;
       }
     } catch (error) {
       errorMessage = 'Error al intentar iniciar sesión';
-      isLoading = false; // Mover setState() a otro lugar
+      isLoading = false;
     }
   }
 
-  Future<void> mostrarSeleccion(BuildContext context) async {
+  Future<void> modalLogin(BuildContext context) async {
     await showDialog(
       context: context,
       builder: (context) {
@@ -184,7 +193,6 @@ class Metodos {
                       if (formKey.currentState!.validate()) {
                         Navigator.pop(context);
                         isConfirmado = true;
-                        await authenticate();
                         updateUser(correo, token2);
                         storage.write(key: "token2", value: token2);
                       }
@@ -219,7 +227,7 @@ class Metodos {
         if (response2.body == almacenamiento.toString()) {
           isAuthenticated = true;
 
-          Get.to(() => const HomeScreen(isLogged: true));
+          Get.to(() => const HomeScreen(isAuthorized: true));
         } else {
           Get.to(() => const LoginPage(isLogged: false));
         }

@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:quiz_ac/home.dart';
 import 'methods.dart';
 
 class LoginPage extends StatefulWidget {
@@ -85,7 +87,12 @@ class _LoginPageState extends State<LoginPage> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 5, left: 100, right: 100),
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    await metodos.authenticate();
+                    if (metodos.authorized == 'Authorized') {
+                      Get.to(() => const HomeScreen(isAuthorized: true));
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(200, 60),
                     shape: RoundedRectangleBorder(
